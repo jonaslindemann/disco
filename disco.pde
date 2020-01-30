@@ -70,6 +70,7 @@ void setup()
     flockingStage.setup();
     
     effectStage = flockingStage;
+    flockingStage.activate();
      //<>//
     // Setup post effect chain
     
