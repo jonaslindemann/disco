@@ -1,0 +1,11 @@
+M0 3C 7F - Starta demo
+
+M0 64 7F - Box grid
+M0 65 7F - Flocking
+
+M0 78 7F - Reset eye
+
+M0 10 XX - X Rotation
+M0 11 XX - Y Rotation
+M0 12 XX - Move camera forward / backward
+

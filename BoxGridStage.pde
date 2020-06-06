@@ -4,9 +4,9 @@ public class BoxGridStage extends EffectStage {
     GlobalTarget _target;
     BoxGrid _box;
     
-    public BoxGridStage(PApplet parent, ControlParams params, AudioPlayer player)
+    public BoxGridStage(PApplet parent, ControlParams params, AudioInput player)
     {
-        super(parent, params, player);
+        super(parent, params, player, "box_grid_stage");
     }
     
     void setup()
@@ -26,19 +26,20 @@ public class BoxGridStage extends EffectStage {
         _box.update();        
     }
     
-    void draw()
+    void doDraw()
     {
         
     }
     
-    void activate()
+    void doActivate()
     {
         params().setParamProp(14, 0, 0.0, 300.0, 5.0);  // target size
         params().setParamProp(15, 0, 0.0, 1.0, 0.5);    // shrink
     }   
     
-    void update()
+    void doUpdate()
     {
+        
         _target.setRadius(params().value(14));
         
         float x = 10.0 * cos(millis()/1000.0);

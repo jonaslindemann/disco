@@ -7,8 +7,19 @@ import nub.primitives.*;
 import nub.core.*;
 import nub.processing.*;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.TreeMap;
+import java.util.Map;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.List;
+
 Minim minim;
 AudioPlayer player;
+AudioInput audioIn;
 
 MidiBus midiBus; 
 
@@ -41,40 +52,45 @@ void setup()
 {
     //size(1920, 1080, P3D);
     fullScreen(P3D);
-    
+            
     minim = new Minim(this);    
-    player = minim.loadFile("flash.mp3", 1024);
+    player = minim.loadFile("disco2.mp3", 1024);
+    audioIn = minim.getLineIn();
       
     MidiBus.list(); // List all available Midi devices on STDOUT. This will show each device's index and name.
 
-    //midiBus = new MidiBus(this, "KOMPLETE KONTROL A25 MIDI", "KOMPLETE KONTROL A25 MIDI"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
-    midiBus = new MidiBus(this, "TouchOSC Bridge", "TouchOSC Bridge"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+    midiBus = new MidiBus(this, "KOMPLETE KONTROL A25 MIDI", "KOMPLETE KONTROL A25 MIDI"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+    //midiBus = new MidiBus(this, "TouchOSC Bridge", "TouchOSC Bridge"); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
+    //midiBus = new MidiBus(this, "loopMIDI Port 1", -1); // Create a new MidiBus with no input device and the default Java Sound Synthesizer as the output device.
     
     params = new ControlParams(this, midiBus);
     params.setParamProp(14, 0, 0.0, 300.0, 5.0);  // target size
-    params.setParamProp(15, 0, 0.0, 1.0, 0.5);    // shrink
+    params.setParamProp(15, 0, 0.0, 1.0, 0.8);    // shrink
     params.setParamProp(16, 0, -0.02, 0.02, 0.0); // rotation
     params.setParamProp(17, 0, -0.02, 0.02, 0.0); // rotation
     params.setParamProp(18, 0, -0.2, 0.2, 0.0); // rotation
-    params.setButtonProps(30, 120);
+    params.setButtonProps(30, 127);
        
     lightVector = new PVector();
     playing = false;
     
     // Scene setup
     
-    boxGridStage = new BoxGridStage(this, params, player);
+    boxGridStage = new BoxGridStage(this, params, audioIn);
     boxGridStage.setup();
+    boxGridStage.loadState();
     
-    flockingStage = new FlockingStage(this, params, player);
+    flockingStage = new FlockingStage(this, params, audioIn);
     flockingStage.setup();
+    flockingStage.loadState();
     
     effectStage = flockingStage;
-    flockingStage.activate();
-     //<>//
+     //<>// //<>//
     // Setup post effect chain
     
     postFX = new PostFX(effectStage.scene(), params);  
+    
+    frameRate(60);
 }
 
 void processMidiControls()
@@ -119,15 +135,30 @@ void processMidiControls()
         postFX.removeNoiseFX();
     if (controlPressed == 41)
         postFX.removeEdgeFX();
+
+    // Switchin Scene
+        
     if (controlPressed == 100)
     {
+        println("Switching to box grid.");
         effectStage = boxGridStage;
         effectStage.activate();
     }
     if (controlPressed == 101)
     {
+        println("Switching to flocking.");
         effectStage = flockingStage;
         effectStage.activate();
+    }
+    
+    // Camera controls
+    
+    if (controlPressed == 120)
+    {
+        println("Reset eye");
+        Scene scene = effectStage.scene();
+        scene.setRadius(20.0);
+        scene.fit();
     }
         
     controlPressed = -1;    
@@ -161,10 +192,7 @@ void draw()
             graphics.directionalLight(255, 255, 255, lightVector.x, lightVector.y, lightVector.z);
             lightVector.set(sin(millis()*0.0001), cos(millis()*0.0002), sin(millis()*0.0005)); 
             graphics.directionalLight(255, 255, 255, lightVector.x, lightVector.y, lightVector.z);
-            //box.setRotation(1.0, 0.0, 0.0, params.value(16));
-            //box.setRotation(0.0, 1.0, 0.0, params.value(17));
-            
-            //scene.rotateCAD(params.value(16), params.value(17));
+
             scene.moveForward(params.value(18));
             scene.eye().orbit(xAxis(), params.value(16));
             scene.eye().orbit(yAxis(), params.value(17));
@@ -178,32 +206,129 @@ void draw()
         drawGraphics = postFX.apply(graphics, drawGraphics);
        
     scene.display(drawGraphics);
+    
+    
+    //fill(255);
+    //text(str(effectStage.eyeInterpolator().time()), 50, 50);    
+}
+
+void stop()
+{
+    println("stop()");
+    boxGridStage.saveState();
+    flockingStage.saveState();
+    postFX.savePresets();
 }
 
 void controlButtonPressed(int number)
 {
-    println("controlButtonPressed", number);
     controlPressed = number;  
+    
+    println("controlButtonPressed(",number,")");
     
     if (controlPressed == 60)
     {
+        println("Start playing.");
         player.loop();
         playing = true;
     }
     if (controlPressed == 61)
     {
-        player.pause();
+        //player.pause();
         playing = false;
     }    
     if (controlPressed == 62)
     {
-        player.rewind();
+        //player.rewind();
         playing = false;
     }    
 }
 
-void keyPressed()
+void mouseDragged() 
 {
+  if (mouseButton == LEFT)
+    effectStage.scene().mouseSpin();
+  else if (mouseButton == RIGHT)
+    effectStage.scene().mouseTranslate();
+  else
+      effectStage.scene().moveForward(mouseX - pmouseX);
+    //effectStage.scene().scale(mouseX - pmouseX);
+}
+
+void mouseWheel(MouseEvent event) 
+{
+    effectStage.scene().moveForward(event.getCount() * 20);
+}
+
+void controllerChange(int channel, int number, int value) 
+{
+    params.updateParams(channel, number, value);
+}
+
+void noteOn(int channel, int pitch, int velocity)
+{
+    //println(channel+":"+pitch+":"+velocity);  
+    //box.explode(velocity/8.0);
+}
+
+
+void keyPressed()
+{ 
+    println("key = "+str(int(key))+"keyCode = "+str(int(keyCode)));
+    
+    if (key == ESC)
+        stop();
+        
+    if (key == '!')
+        postFX.storePreset(1);
+    if (key == '1')
+        postFX.applyPreset(1);
+        
+    if (key == '"')
+        postFX.storePreset(2);
+    if (key == '2')
+        postFX.applyPreset(2);
+
+    if (key == '#')
+        postFX.storePreset(3);
+    if (key == '3')
+        postFX.applyPreset(3);
+
+    if (key == '¤')
+        postFX.storePreset(4);
+    if (key == '4')
+        postFX.applyPreset(4);
+
+    if (key == '%')
+        postFX.storePreset(5);
+    if (key == '5')
+        postFX.applyPreset(5);
+
+    if (key == '&')
+        postFX.storePreset(6);
+    if (key == '6')
+        postFX.applyPreset(6);
+
+    if (key == '/')
+        postFX.storePreset(7);
+    if (key == '7')
+        postFX.applyPreset(7);
+
+    if (key == '(')
+        postFX.storePreset(8);
+    if (key == '8')
+        postFX.applyPreset(8);
+
+    if (key == ')')
+        postFX.storePreset(9);
+    if (key == '9')
+        postFX.applyPreset(9);
+
+    if (key == '=')
+        postFX.storePreset(0);
+    if (key == '0')
+        postFX.applyPreset(0);
+
     if (key == 'e')
         postFX.addEdgeFX();
     if (key == 'n')
@@ -222,6 +347,14 @@ void keyPressed()
         postFX.addScanlineFX();
     if (key == 'g')
         postFX.addGlitchFX();
+    if (key == 'G')
+        postFX.addGlitch2FX();
+    if (key == 't')
+        postFX.addThermalFX();
+    if (key == 'q')
+        postFX.addQuantizationFX();
+    if (key == 'w')
+        postFX.addHalftoneFX();
     if (key == 'c')
         postFX.clear();
     if (key == ' ')
@@ -229,44 +362,38 @@ void keyPressed()
         // Start music
         player.loop();
         playing = true;
+
+        effectStage = boxGridStage;
+        effectStage.activate();
     }
     
-    if (key == '1')
+    if (int(keyCode) == 97)
     {
+        effectStage.deactivate();
         effectStage = boxGridStage;
         effectStage.activate();
     }
         
-    if (key == '2')
+    if (int(keyCode) == 98)
     {
+        effectStage.deactivate();
         effectStage = flockingStage;
         effectStage.activate();
     }
-}
-
-void mouseDragged() 
-{
-  if (mouseButton == LEFT)
-    effectStage.scene().mouseSpin();
-  else if (mouseButton == RIGHT)
-    effectStage.scene().mouseTranslate();
-  else
-    effectStage.scene().scale(mouseX - pmouseX);
-}
-
-void mouseWheel(MouseEvent event) 
-{
-    effectStage.scene().moveForward(event.getCount() * 20);
-}
-
-void controllerChange(int channel, int number, int value) 
-{
-    println(number, value);
-    params.updateParams(channel, number, value);
-}
-
-void noteOn(int channel, int pitch, int velocity)
-{
-    println(channel+":"+pitch+":"+velocity);  
-    //box.explode(velocity/8.0);
+    
+    if (key == '.')
+    {
+        println("Adding keyframe");
+        effectStage.eyeInterpolator().addKeyFrame();
+    }
+    if (key == ',')
+    {
+        println("Adding keyframe");
+        effectStage.eyeInterpolator().clear();
+    }
+    if (key == '-')
+    {
+        println("Adding keyframe");
+        effectStage.eyeInterpolator().toggle();
+    }
 }

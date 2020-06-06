@@ -20,12 +20,12 @@ class ControlParams {
         _parent = parent;
         _midiBus = bus;        
         
-        paramVal = new int[127];
-        paramNum = new int[127];
-        paramType = new int[127];
-        valueMax = new float[127];
-        valueMin = new float[127];
-        value = new float[127];
+        paramVal = new int[128];
+        paramNum = new int[128];
+        paramType = new int[128];
+        valueMax = new float[128];
+        valueMin = new float[128];
+        value = new float[128];
         
         for (int i=0; i<64; i++)
         {
@@ -75,6 +75,7 @@ class ControlParams {
         {
             if (paramType[number] == 0)
             {
+                println("Controller ", number, " value = ", v);
                 paramVal[number] = v;
             
                 float valueRange = valueMax[number] - valueMin[number];
@@ -88,9 +89,9 @@ class ControlParams {
             }
             if (paramType[number] == 1)
             {
-                println("v=",v);
                 if (v == 127)
                 {
+                    println("Controller ", number, " pressed");
                     if (controlButtonPressedEvent!=null)
                     {
                         try 

@@ -195,6 +195,7 @@ public class Particle extends Node {
     {
         pg.pushStyle();
         pg.noStroke();
+        //pg.stroke(0);
         pg.fill(_color);
         pg.sphereDetail(4);
         //pg.sphere(0.2);

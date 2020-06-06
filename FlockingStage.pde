@@ -3,12 +3,12 @@ public class FlockingStage extends EffectStage {
     Node _rootNode;
     Flocking _flocking;
     
-    public FlockingStage(PApplet parent, ControlParams params, AudioPlayer player)
+    public FlockingStage(PApplet parent, ControlParams params, AudioInput player)
     {
-        super(parent, params, player);
+        super(parent, params, player, "flocking_stage");
     }
     
-    void setup()
+    void doSetup()
     {
         scene().setRadius(20.0);
         scene().fit();
@@ -20,21 +20,23 @@ public class FlockingStage extends EffectStage {
         
     }
     
-    void activate()
+    void doActivate()
     {
         params().setParamProp(14, 0, 0.0, 0.5, 0.25);  // target size
-        params().setParamProp(15, 0, 0.0, 0.5, 0.1);    // shrink    
+        params().setParamProp(15, 0, 0.0, 1.0, 0.2);    // shrink    
+        params().setParamProp(16, 0, 0.0, 2.0, 0.5);    // shrink    
     }
-    
+     
     void reverse()
     {
         _flocking.reverse();    
     }
     
-    void update()
+    void doUpdate()
     {        
         _flocking.setShrink(params().value(15));
         _flocking.setFftScale(params().value(14));
+        _flocking.setScale(params().value(16));
         _flocking.updateAnim();        
     }
 }

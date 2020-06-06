@@ -2,12 +2,24 @@ class FX {
     PShader _shader;
     PGraphics _graphics;
     String _filename;
+    int _tag;
     
     FX(String filename)
     {
         _shader = loadShader(filename);
         _graphics = createGraphics(width, height, P3D);
         _graphics.shader(_shader);
+        _tag = -1;
+    }
+    
+    void setTag(int tag)
+    {
+        _tag = tag;        
+    }
+    
+    int tag()
+    {
+        return _tag;    
     }
     
     PGraphics apply(PGraphics g0, PGraphics g1)
@@ -18,6 +30,11 @@ class FX {
     PGraphics graphics()
     { 
         return _graphics;
+    }
+    
+    void updateInputs()
+    {
+        
     }
     
 }
@@ -232,6 +249,56 @@ class GlitchFX extends ShaderToyFX {
     GlitchFX()
     {
         super("glitch.glsl");
+    }
+    
+    void updateInputs()
+    {
+    }   
+}
+
+class Glitch2FX extends ShaderToyFX {
+    
+    Glitch2FX()
+    {
+        super("glitch2.glsl");
+    }
+    
+    void updateInputs()
+    {
+        
+    }   
+}
+
+
+class ThermalFX extends ShaderToyFX {
+
+    ThermalFX()
+    {
+        super("thermal.glsl");
+    }
+    
+    void updateInputs()
+    {
+    }   
+}
+
+class QuantizationFX extends ShaderToyFX {
+
+    QuantizationFX()
+    {
+        super("quantization.glsl");
+    }
+    
+    void updateInputs()
+    {
+    }   
+}
+
+class HalftoneFX extends ShaderToyFX {
+
+    HalftoneFX()
+    {
+        super("halftone.glsl");
     }
     
     void updateInputs()

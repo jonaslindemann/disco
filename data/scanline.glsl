@@ -1,3 +1,4 @@
+
 uniform vec3      iResolution;           // viewport resolution (in pixels)
 uniform float     iTime;                 // shader playback time (in seconds) (replaces iGlobalTime which is now obsolete)
 uniform float     iTimeDelta;            // render time (in seconds)
@@ -51,30 +52,31 @@ void main() {
   vec2 res=vec2(320.0/1.0,160.0/1.0);
 #else
   // Optimize for resize.
-  #define res (iResolution.xy/6.0)
+  //#define res (iResolution.xy/6.0)
+  #define res (iResolution.xy/4.0)
 #endif
 
 // Hardness of scanline.
 //  -8.0 = soft
 // -16.0 = medium
-float hardScan=-10.0;
+float hardScan=-8.0;
 
 // Hardness of pixels in scanline.
 // -2.0 = soft
 // -4.0 = hard
-float hardPix=-4.0;
+float hardPix=-2.0;
 
 // Hardness of short vertical bloom.
 //  -1.0 = wide to the point of clipping (bad)
 //  -1.5 = wide
 //  -4.0 = not very wide at all
-float hardBloomScan=-2.0;
+float hardBloomScan=-1.0;
 
 // Hardness of short horizontal bloom.
 //  -0.5 = wide to the point of clipping (bad)
 //  -1.0 = wide
 //  -2.0 = not very wide at all
-float hardBloomPix=-1.5;
+float hardBloomPix=-0.5;
 
 // Amount of small bloom effect.
 //  1.0/1.0 = only bloom

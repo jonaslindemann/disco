@@ -3,7 +3,7 @@ public class Flocking extends Node {
     Node _nodeParent;    
     PApplet _applet;
     ControlParams _params;
-    AudioPlayer _player;
+    AudioInput _player;
     FFT _fft;
     
     int _rows;
@@ -13,6 +13,7 @@ public class Flocking extends Node {
     float _rowSpacing;
     float _colSpacing;
     float _shrink;
+    float _scale;
     float _fftScale;
     
     int _currentRow;
@@ -21,7 +22,7 @@ public class Flocking extends Node {
     
     Particle[][] _partArr;    
 
-    public Flocking(Node parent, PApplet applet, ControlParams params, AudioPlayer player) 
+    public Flocking(Node parent, PApplet applet, ControlParams params, AudioInput player) 
     {
         super(parent);
         
@@ -40,6 +41,7 @@ public class Flocking extends Node {
     
         _w = 20.0;
         _d = 20.0;
+        _scale = 0.5;
         
         _fftScale = 1.0;
         
@@ -80,6 +82,11 @@ public class Flocking extends Node {
         */
     }
     
+    void setScale(float scl)
+    {
+        _scale = scl;    
+    }
+    
     void reverse()
     {
         for (Particle p : _particles)
@@ -99,19 +106,21 @@ public class Flocking extends Node {
         _fft.forward(_player.mix);
         
         float nscl = 0.05;
-        float tscl = _fft.getAvg(0)*0.05 + millis()/5000.0;
+        float tscl = _fft.getAvg(0)*0.2 + millis()/5000.0;
         
         for (Particle p : _particles)
             p.updateAnim();
                     
+        /*
         for (int col=0; col<_cols; col++)
         {
             Particle p = _partArr[_currentRow][col];
             PVector pos = p.target();
             //pos.add(0.0, -_fft.getAvg(col),0.0);
             //_partArr[_currentRow][col].setPos(pos.x, pos.y, pos.z);
-            p.setTarget(pos.x, -_fft.getAvg(abs(_cols/2 - col))*_fftScale, pos.z);
+            p.setTarget(pos.x, pos.y -_fft.getAvg(abs(_cols/2 - col))*_fftScale, pos.z);
         }
+        */
         
         for (int col=0; col<_cols; col++)
             for (int row=0; row<_rows; row++)
@@ -120,9 +129,17 @@ public class Flocking extends Node {
                 p.setSize(_shrink, _shrink, _shrink);
                 p.setColor(
                     color(
-                        255*_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl), 
-                        255*_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl-3.0), 
-                        255*_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl+4.0)));
+                        383*_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl), 
+                        192*_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl-3.0), 
+                        192*_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl+4.0)));
+                        
+                PVector pos = p.pos();
+                        
+               p.setPos(pos.x, pos.y + _scale*(0.5-_applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl)), pos.z);
+               
+               float scl = _shrink * _applet.noise(row*nscl+tscl, col*nscl+tscl, col*nscl+tscl+4.0);
+               
+               p.setSize(scl, scl, scl);
             }
         
         

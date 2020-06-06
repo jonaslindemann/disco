@@ -12,14 +12,14 @@ public class BoxGrid extends Node {
     PApplet _applet;
     ControlParams _params;
     GlobalTarget _globalTarget;
-    AudioPlayer _player;
+    AudioInput _player;
     FFT _fft;
 
-    public BoxGrid(Node parent, PApplet applet, ControlParams params, AudioPlayer player) 
+    public BoxGrid(Node parent, PApplet applet, ControlParams params, AudioInput player) 
     {
         super(parent);
         
-        _applet = applet; //<>//
+        _applet = applet; //<>// //<>// //<>//
         _params = params;
         _player = player;
         
@@ -49,7 +49,7 @@ public class BoxGrid extends Node {
    
     void initGridNode()
     {
-        _nodeArr = new Box[_rows][_cols][_layers]; //<>// //<>//
+        _nodeArr = new Box[_rows][_cols][_layers]; //<>// //<>// //<>// //<>//
         
         float xMin = -_w/2.0+_w*0.5/_cols;
         float yMin = -_h/2.0+_h*0.5/_rows;
